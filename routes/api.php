@@ -30,4 +30,5 @@ Route::get('/unauth', function ()
     ], 403);
 })->name('login');
 
+
 Route::resource('files', \App\Http\Controllers\FileController::class)->middleware('auth:api');

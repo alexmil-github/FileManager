@@ -40,7 +40,7 @@ class FileController extends Controller
             $originalName = $file->getClientOriginalName();
             $newFileName = $originalName;
             while (Storage::disk('public')->exists(PATH . $newFileName)) {
-                $newFileName = pathinfo($originalName, PATHINFO_FILENAME) . '('. $i .').' . pathinfo($originalName, PATHINFO_EXTENSION);
+                $newFileName = pathinfo($originalName, PATHINFO_FILENAME) . '(' . $i . ').' . pathinfo($originalName, PATHINFO_EXTENSION);
                 $i++;
             }
             return $newFileName;
@@ -104,16 +104,24 @@ class FileController extends Controller
     public function destroy($file_id)
     {
         $file = File::where('file_id', $file_id)->first();
-        $fileName = $file->name;
-        $filePath = 'uploads/' . $fileName;
-
-
-        if (Storage::disk('public')->exists($filePath)) {
-           Storage::disk('public')->delete($filePath);
-            return response()->json(['message' => 'File deleted successfully.']);
-        } else {
-            return response()->json(['message' => 'File not found.']);
+        if ($file->owner_id != Auth::id()) {
+            return response()->json(['Forbidden for you'], 403);
         }
 
+        if ($file) {
+            $fileName = $file->name;
+            $filePath = 'uploads/' . $fileName;
+
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+                $file->delete();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'File already deleted'
+                ], 200);
+            }
+        } else {
+            return response()->json(['message' => 'Not found'], 404);
+        }
     }
 }
