@@ -85,7 +85,7 @@ class FileController extends Controller
     public function show($file_id)
     {
         $file = File::where('file_id', $file_id)->first();
-        if(!$file) {
+        if (!$file) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -99,20 +99,33 @@ class FileController extends Controller
 
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(File $file)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, File $file)
+    public function update(Request $request, $file_id)
     {
-        //
+
+        $file = File::where('file_id', $file_id)->first();
+        if (!$file) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+        if ($file->owner_id != Auth::id()) {
+            return response()->json(['Forbidden for you'], 403);
+        }
+        if (Storage::disk('public')->exists('uploads/'.$file->name)) {
+            $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+
+            Storage::disk('public')->move('uploads/' . $file->name, 'uploads/' . $request->name .'.'. $extension);
+            $file->name = $request->name .".".$extension;
+            $file->url = Storage::disk('public')->url('uploads/' . $request->name . '.'. $extension);
+            $file->save();
+
+            return response()->json([
+               'success'=> true,
+               'message' => 'Renamed'
+            ]);
+        }
     }
 
     /**
