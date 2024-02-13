@@ -11,24 +11,9 @@ use Illuminate\Support\Str;
 
 class FileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Загрузка файла
      */
     public function store(Request $request)
     {
@@ -101,7 +86,7 @@ class FileController extends Controller
 
 
     /**
-     * Update the specified resource in storage.
+     * Изменение имени файла
      */
     public function update(Request $request, $file_id)
     {
@@ -129,7 +114,7 @@ class FileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Удаление файла
      */
     public function destroy($file_id)
     {
