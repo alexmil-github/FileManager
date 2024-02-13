@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\File;
+use App\Models\File_user;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -52,13 +54,17 @@ class FileController extends Controller
         if ($files) {
             foreach ($files as $key => $file) {
                 $newFileName = generateNewFileName($file);
-                $url = Storage::disk('public')->putFileAs(PATH, $file, $newFileName);
+                Storage::disk('public')->putFileAs(PATH, $file, $newFileName);
 
-                $input['url'] = Storage::disk('public')->url(PATH . $newFileName);;
+                $input['url'] = Storage::disk('public')->url(PATH . $newFileName);
                 $input['name'] = $newFileName;
                 $input['owner_id'] = Auth::id();
                 $input['file_id'] = Str::random(10);
-                File::create($input);
+                $file = File::create($input);
+                File_user::create([
+                    'file_id' => $file->id,
+                    'user_id' => Auth::id()
+                ]);
 
                 $result[$key]['success'] = true;
                 $result[$key]['message'] = 'Success';
@@ -75,11 +81,23 @@ class FileController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Скачивание файла
      */
-    public function show(File $file)
+    public function show($file_id)
     {
-        //
+        $file = File::where('file_id', $file_id)->first();
+        if(!$file) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        $access = File_user::where('file_id', $file->id)->where('user_id', Auth::id())->first();
+
+        if (!$access) {
+            return response()->json(['Forbidden for you'], 403);
+        }
+
+        return Storage::disk('public')->url('uploads/' . $file->name);
+
     }
 
     /**
