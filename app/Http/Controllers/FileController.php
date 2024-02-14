@@ -84,7 +84,6 @@ class FileController extends Controller
         }
 
         return Storage::disk('public')->url('uploads/' . $file->name);
-
     }
 
 

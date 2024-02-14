@@ -9,6 +9,10 @@ class UserController extends Controller
 {
     public function register(Request $request)
     {
+
+        if(User::where('email', $request->email)->first()) {
+            return response()->json(['message' => 'A user with this email already exists'], 404);
+        }
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AccessController extends Controller
 {
+    //Добавление прав
     public function addRight(Request $request, $file_id)
     {
         //Попытка доступа к несуществующему объекту
@@ -54,6 +55,7 @@ class AccessController extends Controller
 
     }
 
+    //Удаление прав
     public function deleteRight(Request $request, $file_id)
     {
         //Попытка доступа к несуществующему объекту
@@ -97,4 +99,22 @@ class AccessController extends Controller
 
 
     }
+
+    //Просмотр файлов пользователя
+    public function disk()
+    {
+        $files = File::where('user_id', Auth::id())->get();
+        $result = [];
+
+
+    }
+
+    //Просмотр файлов, к которым имеет доступ пользователь
+//    public function shared()
+//    {
+//         $files = File_user::where('user_id', Auth::id())->get();
+//         dd($files);
+//    }
+
+
 }
