@@ -20,6 +20,7 @@ class FileController extends Controller
         define("PATH", "uploads/");
 
 
+        //Функция изменения имени, в случае уже имеющегося в каталоге
         function generateNewFileName($file)
         {
             $i = 1;
@@ -36,6 +37,7 @@ class FileController extends Controller
         $result = [];
         $files = $request->file('files');
         if ($files) {
+            //Перебераем массив файлов, полученных с формы
             foreach ($files as $key => $file) {
                 $newFileName = generateNewFileName($file);
                 Storage::disk('public')->putFileAs(PATH, $file, $newFileName);
@@ -69,13 +71,14 @@ class FileController extends Controller
      */
     public function show($file_id)
     {
+        //Попытка доступа к несуществующему объекту
         $file = File::where('file_id', $file_id)->first();
         if (!$file) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
+        //Попытка скачать файл к которому нет доступа
         $access = File_user::where('file_id', $file->id)->where('user_id', Auth::id())->first();
-
         if (!$access) {
             return response()->json(['message' => 'Forbidden for you'], 403);
         }
@@ -90,14 +93,18 @@ class FileController extends Controller
      */
     public function update(Request $request, $file_id)
     {
-
+        //Попытка доступа к несуществующему объекту
         $file = File::where('file_id', $file_id)->first();
         if (!$file) {
             return response()->json(['message' => 'Not found'], 404);
         }
+
+        //Попытка изменить файл к которому нет доступа
         if ($file->owner_id != Auth::id()) {
             return response()->json(['message' => 'Forbidden for you'], 403);
         }
+
+        //Проверяем, если файл имеется в каталоге, то переименовываем с помощью move()
         if (Storage::disk('public')->exists('uploads/'.$file->name)) {
             $extension = pathinfo($file->name, PATHINFO_EXTENSION);
 
@@ -118,12 +125,17 @@ class FileController extends Controller
      */
     public function destroy($file_id)
     {
+        //Попытка доступа к несуществующему объекту
         $file = File::where('file_id', $file_id)->first();
+        if (!$file) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        //Попытка удалить файл к которому нет доступа
         if ($file->owner_id != Auth::id()) {
             return response()->json(['message' => 'Forbidden for you'], 403);
         }
 
-        if ($file) {
             $fileName = $file->name;
             $filePath = 'uploads/' . $fileName;
 
@@ -135,8 +147,5 @@ class FileController extends Controller
                     'message' => 'File already deleted'
                 ], 200);
             }
-        } else {
-            return response()->json(['message' => 'Not found'], 404);
-        }
     }
 }
