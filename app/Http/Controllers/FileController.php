@@ -77,7 +77,7 @@ class FileController extends Controller
         $access = File_user::where('file_id', $file->id)->where('user_id', Auth::id())->first();
 
         if (!$access) {
-            return response()->json(['Forbidden for you'], 403);
+            return response()->json(['message' => 'Forbidden for you'], 403);
         }
 
         return Storage::disk('public')->url('uploads/' . $file->name);
@@ -96,7 +96,7 @@ class FileController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
         if ($file->owner_id != Auth::id()) {
-            return response()->json(['Forbidden for you'], 403);
+            return response()->json(['message' => 'Forbidden for you'], 403);
         }
         if (Storage::disk('public')->exists('uploads/'.$file->name)) {
             $extension = pathinfo($file->name, PATHINFO_EXTENSION);
@@ -120,7 +120,7 @@ class FileController extends Controller
     {
         $file = File::where('file_id', $file_id)->first();
         if ($file->owner_id != Auth::id()) {
-            return response()->json(['Forbidden for you'], 403);
+            return response()->json(['message' => 'Forbidden for you'], 403);
         }
 
         if ($file) {

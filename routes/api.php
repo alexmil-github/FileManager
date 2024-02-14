@@ -32,3 +32,5 @@ Route::get('/unauth', function ()
 
 
 Route::resource('files', \App\Http\Controllers\FileController::class)->middleware('auth:api');
+
+Route::post('/files/{file}/access', [\App\Http\Controllers\AccessController::class, 'addRight'])->middleware('auth:api');
