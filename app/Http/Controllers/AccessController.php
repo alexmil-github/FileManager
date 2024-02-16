@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AccessResource;
 use App\Models\File;
 use App\Models\File_user;
 use App\Models\User;
@@ -36,22 +35,7 @@ class AccessController extends Controller
             'user_id' => $user_id
         ]);
 
-        //Формируем ответ
-
-        $users = File_user::where('file_id', $file->id)->select('user_id')->get();
-
-        $result = [];
-
-        foreach ($users as $key => $user) {
-            $user = User::find($user->user_id);
-            $result[$key] = [
-                "fullname" => $user->first_name . " " . $user->last_name,
-                "email" => $user->email,
-                "type" => ($user->id == Auth::id() ? 'author' : 'co-author')
-            ];
-        }
-
-        return $result;
+        return $this->user_access($file);
 
     }
 
@@ -103,18 +87,52 @@ class AccessController extends Controller
     //Просмотр файлов пользователя
     public function disk()
     {
-        $files = File::where('user_id', Auth::id())->get();
+        $files = File::where('owner_id', Auth::id())->get();
         $result = [];
+
+        foreach ($files as $key => $file) {
+            $result[$key] = [
+                'file_id' => $file->file_id,
+                'name' => $file->name,
+                'url' => $file->url,
+                'access' =>  $this->user_access($file)
+            ];
+        }
+        return $result;
 
 
     }
 
     //Просмотр файлов, к которым имеет доступ пользователь
-//    public function shared()
-//    {
-//         $files = File_user::where('user_id', Auth::id())->get();
-//         dd($files);
-//    }
+    public function shared()
+    {
+        $files = File_user::where('user_id', Auth::id())->get();
+        $result = [];
+        foreach ($files as $key => $file) {
+            $result[$key] = [
+                'file_id' => File::find($file->file_id)->file_id,
+                'name' => File::find($file->file_id)->name,
+                'url' => File::find($file->file_id)->url
+            ];
+        }
+        return $result;
 
+    }
 
+    private function user_access($file)
+    {
+        $users = File_user::where('file_id', $file->id)->select('user_id')->get();
+
+        $result = [];
+
+        foreach ($users as $key => $user) {
+            $user = User::find($user->user_id);
+            $result[$key] = [
+                "fullname" => $user->first_name . " " . $user->last_name,
+                "email" => $user->email,
+                "type" => ($user->id == Auth::id() ? 'author' : 'co-author')
+            ];
+        }
+        return $result;
+    }
 }

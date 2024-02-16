@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class File extends Model
 {
@@ -15,4 +16,5 @@ class File extends Model
         'url',
         'owner_id',
     ];
+
 }
