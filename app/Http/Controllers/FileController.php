@@ -19,7 +19,7 @@ class FileController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|mimes:doc,pdf,docx,zip,jpeg,jpg,png|max:2048',
+            'files.*' => 'required|mimes:doc,pdf,docx,zip,jpeg,jpg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -28,7 +28,6 @@ class FileController extends Controller
                 'message' => $validator->errors()
             ], 422);
         }
-
 
         define("PATH", "uploads/");
 
@@ -75,8 +74,6 @@ class FileController extends Controller
                 $result,
             );
         }
-
-
     }
 
     /**
@@ -96,7 +93,10 @@ class FileController extends Controller
             return response()->json(['message' => 'Forbidden for you'], 403);
         }
 
-        return Storage::disk('public')->url('uploads/' . $file->name);
+        $path = Storage::disk('public')->path('uploads/' . $file->name);
+
+        return response()->download($path);
+
     }
 
 
